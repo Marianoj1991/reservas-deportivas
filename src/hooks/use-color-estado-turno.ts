@@ -1,12 +1,8 @@
-import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { Colors } from "../constants/theme";
 import { EstadoTurno } from "../types";
+import { useEsquema } from "./use-esquema";
 
-interface Props {
-  estado: EstadoTurno;
-}
-
-export function useEstadoTurnoColor({ estado }: Props) {
-  const theme = useColorScheme() ?? "light";
-  return Colors[theme].estadoTurno[estado];
+export function useEstadoTurnoColor(estado: EstadoTurno) {
+  const theme = useEsquema();
+  return Colors[theme].estadoTurno;
 }

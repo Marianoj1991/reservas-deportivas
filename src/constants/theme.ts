@@ -7,10 +7,13 @@ import { Platform } from "react-native";
 
 import type { EstadoTurno } from "../types";
 
+export type ColorKeys = {
+  [K in keyof Tema]: Tema[K] extends string ? K : never;
+}[keyof Tema];
+
 export interface Tema {
   // Fondos y superficies
   fondoApp: string;
-  fondoPagina: string;
   superficie1: string; // cards, hojas (bottom sheets)
   superficie2: string; // chips, inputs
   superficie3: string; // etiquetas sobre imagen
@@ -41,10 +44,9 @@ export interface Tema {
   estadoTurno: Record<EstadoTurno, { fondo: string; texto: string }>;
 }
 
-export const Colors: Record<string, Tema> = {
+export const Colors: Record<"light" | "dark", Tema> = {
   dark: {
     fondoApp: "#121212",
-    fondoPagina: "#0a0a0a",
     superficie1: "#1a1a1a",
     superficie2: "#212121",
     superficie3: "#262626",
@@ -76,7 +78,6 @@ export const Colors: Record<string, Tema> = {
 
   light: {
     fondoApp: "#ffffff",
-    fondoPagina: "#f4f5f3",
     superficie1: "#f7f7f5",
     superficie2: "#eef0ec",
     superficie3: "#e7e9e2",
