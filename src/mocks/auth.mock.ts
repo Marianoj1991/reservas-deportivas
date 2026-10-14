@@ -70,7 +70,9 @@ export const iniciarSesionMock = async (email: string, contrasenia: string) => {
       "Email o contraseña incorrectos",
     );
   }
+
   const { contrasenia: _contrasenia, token, ...usuario } = usuarioEncontrado;
+
   return {
     datos: { token, usuario },
     meta: { total: 1, pagina: 1, porPagina: 1 },

@@ -20,8 +20,8 @@ export const iniciarSesionServicio = async (
     );
 
     return {
-      datos: { ...datos },
-      meta: { ...meta },
+      datos,
+      meta,
     };
   } catch (error) {
     if (error instanceof ErrorApi) {
