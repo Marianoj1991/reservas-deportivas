@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 
-import { authServicio } from "../servicios/auth";
+import { iniciarSesionServicio } from "../services/auth.service";
 import type { Usuario } from "../types";
 
 const CLAVE_TOKEN = "sesion.token";
@@ -20,11 +20,7 @@ export interface AuthContextValue {
   /** true mientras se lee la sesión guardada al abrir la app. */
   restaurando: boolean;
   esStaff: boolean;
-  iniciarSesionJugador: (telefono: string, codigo: string) => Promise<void>;
-  iniciarSesionStaff: (
-    nombreUsuario: string,
-    contrasena: string,
-  ) => Promise<void>;
+  iniciarSesion: (email: string, contrasenia: string) => Promise<void>;
   cerrarSesion: () => Promise<void>;
 }
 
@@ -42,7 +38,7 @@ function leerUsuarioGuardado(texto: string | null): Usuario | null {
 }
 
 async function borrarSesionGuardada() {
-  // Las dos operaciones arrancan siempre, aunque una falle.
+  // Borramos las dos cosas aunque falle solo una
   await Promise.all([
     SecureStore.deleteItemAsync(CLAVE_TOKEN),
     Storage.removeItem(CLAVE_USUARIO),
@@ -53,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [restaurando, setRestaurando] = useState(true);
 
-  // Al abrir la app: recuperar la sesión guardada, sin pedir red.
+  // Esto pasa apenas abrimos la app, es para ver si hay un usuario guardado
   useEffect(() => {
     let cancelado = false;
 
@@ -67,11 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (token && guardado) {
           if (!cancelado) setUsuario(guardado);
         } else if (token || guardado) {
-          // Sesión a medias (falta una de las dos piezas): se descarta.
+          // Sesión a medias es decir falta una de las piezas, se descarta
           await borrarSesionGuardada();
         }
       } catch {
-        // Si no se puede leer el almacenamiento, se arranca sin sesión.
+        // Si alguna de los dos falla arrancamos sin sesión
       } finally {
         if (!cancelado) setRestaurando(false);
       }
@@ -83,33 +79,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Parte compartida de los dos logins.
-  const abrirSesion = useCallback(async (token: string, nuevo: Usuario) => {
-    await SecureStore.setItemAsync(CLAVE_TOKEN, token);
-    await Storage.setItem(CLAVE_USUARIO, JSON.stringify(nuevo));
-    setUsuario(nuevo);
-  }, []);
-
-  const iniciarSesionJugador = useCallback(
-    async (telefono: string, codigo: string) => {
-      const { token, usuario: nuevo } = await authServicio.loginJugador(
-        telefono,
-        codigo,
+  const iniciarSesion = useCallback(
+    async (email: string, contrasenia: string) => {
+      const { usuario, token } = await iniciarSesionServicio(
+        email,
+        contrasenia,
       );
-      await abrirSesion(token, nuevo);
-    },
-    [abrirSesion],
-  );
 
-  const iniciarSesionStaff = useCallback(
-    async (nombreUsuario: string, contrasena: string) => {
-      const { token, usuario: nuevo } = await authServicio.loginStaff(
-        nombreUsuario,
-        contrasena,
-      );
-      await abrirSesion(token, nuevo);
+      await SecureStore.setItem(CLAVE_TOKEN, token);
+      await Storage.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
+      setUsuario(usuario);
     },
-    [abrirSesion],
+    [],
   );
 
   const cerrarSesion = useCallback(async () => {
@@ -134,18 +115,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       usuario,
       restaurando,
       esStaff,
-      iniciarSesionJugador,
-      iniciarSesionStaff,
+      iniciarSesion,
       cerrarSesion,
     }),
-    [
-      usuario,
-      restaurando,
-      esStaff,
-      iniciarSesionJugador,
-      iniciarSesionStaff,
-      cerrarSesion,
-    ],
+    [usuario, restaurando, esStaff, iniciarSesion, cerrarSesion],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
