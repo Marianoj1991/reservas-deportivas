@@ -1,3 +1,4 @@
+import { delay } from "../helper/delay";
 import type { Usuario } from "../types";
 
 // Solo para pruebas porque contrasenia y token no forman parte de Usuario
@@ -47,12 +48,9 @@ export const USUARIOSMOCK: UsuarioMock[] = [
   },
 ];
 
-const esperar = (ms: number) =>
-  new Promise<void>((resolver) => setTimeout(resolver, ms));
-
 export const iniciarSesionMock = async (email: string, contrasenia: string) => {
   try {
-    await esperar(1000);
+    await delay(1000);
 
     if (email === EMAIL_QUE_SIMULA_SIN_RED) {
       return {
