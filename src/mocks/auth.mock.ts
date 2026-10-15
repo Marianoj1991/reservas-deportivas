@@ -1,5 +1,3 @@
-// src/mocks/auth.mock.ts
-import { ErrorApi } from "../services/errors.service";
 import type { Usuario } from "../types";
 
 // Solo para pruebas porque contrasenia y token no forman parte de Usuario
@@ -53,28 +51,52 @@ const esperar = (ms: number) =>
   new Promise<void>((resolver) => setTimeout(resolver, ms));
 
 export const iniciarSesionMock = async (email: string, contrasenia: string) => {
-  await esperar(1000);
+  try {
+    await esperar(1000);
 
-  if (email === EMAIL_QUE_SIMULA_SIN_RED) {
-    throw new ErrorApi(
-      "SIN_CONEXION",
-      "No hay conexión. Revisá tu señal e intenta de nuevo",
-    );
+    if (email === EMAIL_QUE_SIMULA_SIN_RED) {
+      return {
+        error: {
+          codigo: "SIN_CONEXION",
+          mensaje: "No hay conexión. Revisá tu señal e intenta de nuevo",
+        },
+      };
+    }
+
+    const usuarioEncontrado = USUARIOSMOCK.find((u) => u.email === email);
+
+    if (!usuarioEncontrado || usuarioEncontrado.contrasenia !== contrasenia) {
+      return {
+        error: {
+          codigo: "CREDENCIALES_INVALIDAS",
+          mensaje: "Email o contraseña incorrectos.",
+        },
+      };
+    }
+
+    const { contrasenia: _contrasenia, token, ...usuario } = usuarioEncontrado;
+
+    return {
+      datos: { token, usuario },
+      meta: { total: 1, pagina: 1, porPagina: 1 },
+    };
+  } catch (err) {
+    if (err instanceof Error) {
+      return {
+        error: {
+          codigo: "ERROR_INESPERADO",
+          mensaje:
+            err.message ||
+            "Ocurrió un error inesperado al intentar iniciar sesión.",
+        },
+      };
+    }
+
+    return {
+      error: {
+        codigo: "ERROR_INESPERADO",
+        mensaje: "Ocurrió un error inesperado al intentar iniciar sesión.",
+      },
+    };
   }
-
-  const usuarioEncontrado = USUARIOSMOCK.find((u) => u.email === email);
-
-  if (!usuarioEncontrado || usuarioEncontrado.contrasenia !== contrasenia) {
-    throw new ErrorApi(
-      "CREDENCIALES_INVALIDAS",
-      "Email o contraseña incorrectos",
-    );
-  }
-
-  const { contrasenia: _contrasenia, token, ...usuario } = usuarioEncontrado;
-
-  return {
-    datos: { token, usuario },
-    meta: { total: 1, pagina: 1, porPagina: 1 },
-  };
 };
