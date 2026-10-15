@@ -81,14 +81,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const iniciarSesion = useCallback(
     async (email: string, contrasenia: string) => {
-      const { usuario, token } = await iniciarSesionServicio(
-        email,
-        contrasenia,
-      );
+      const serviceResponse = await iniciarSesionServicio(email, contrasenia);
 
-      await SecureStore.setItem(CLAVE_TOKEN, token);
-      await Storage.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
-      setUsuario(usuario);
+      if ("error" in serviceResponse) {
+        return;
+      }
+
+      const { datos, meta } = serviceResponse;
+
+      await SecureStore.setItem(CLAVE_TOKEN, datos.token);
+      await Storage.setItem(CLAVE_USUARIO, JSON.stringify(datos.usuario));
+      setUsuario(datos.usuario);
     },
     [],
   );
@@ -105,8 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Encargado y administrador hacen lo mismo por ahora. Si los permisos se
-  // separan, este es el único lugar que cambia.
+  // Encargado y administrador hacen lo mismo por ahora. Si los permisos se separan, este es el único lugar que cambia.
   const esStaff =
     usuario?.rol === "encargado" || usuario?.rol === "administrador";
 

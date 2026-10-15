@@ -1,6 +1,5 @@
 import { iniciarSesionMock } from "../mocks/auth.mock";
 import { RespuestaApi, Usuario } from "../types";
-import { ErrorApi } from "./errors.service";
 
 export interface Sesion {
   token: string;
@@ -14,23 +13,24 @@ export const iniciarSesionServicio = async (
   try {
     const emailNormalizado = email.trim().toLowerCase();
 
-    const { datos, meta } = await iniciarSesionMock(
-      emailNormalizado,
-      contrasenia,
-    );
+    const resultado = await iniciarSesionMock(emailNormalizado, contrasenia);
 
-    return {
-      datos,
-      meta,
-    };
-  } catch (error) {
-    if (error instanceof ErrorApi) {
-      throw error;
+    if ("error" in resultado) {
+      return resultado;
     }
 
-    throw new ErrorApi(
-      "SIN_CONEXION",
-      "No hay conexión con el servidor. Revisá tu red e intentá de nuevo.",
-    );
+    return {
+      datos: resultado.datos,
+      meta: resultado.meta,
+    };
+  } catch (err: any) {
+    return {
+      error: {
+        codigo: err?.codigo || "ERROR_INESPERADO",
+        mensaje:
+          err?.message ||
+          "Ocurrió un error inesperado al intentar iniciar sesión.",
+      },
+    };
   }
 };
