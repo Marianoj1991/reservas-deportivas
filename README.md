@@ -1,50 +1,47 @@
-# Welcome to your Expo app 👋
+# Reservas Deportivas
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación móvil para consultar espacios deportivos de Villaguay. Está hecha con React Native, Expo y TypeScript.
 
-## Get started
+## Probar la app en una computadora o un teléfono
 
-1. Install dependencies
+Necesitás Node.js 22 o superior, pnpm 10 y Expo Go en el teléfono.
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```powershell
+npm install --global pnpm@10.34.6
+pnpm install
+pnpm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+La primera vez, escaneá con Expo Go el código QR que aparece en la terminal. El teléfono y la computadora tienen que estar conectados a la misma red Wi-Fi. Si no tenés la API configurada, la app muestra el catálogo de demostración y no necesita conexión a internet para mostrar sus imágenes.
 
-## Learn more
+## Conectar la API de la cátedra
 
-To learn more about developing your project with Expo, look at the following resources:
+La app consulta `GET /espacios` y `GET /deportes`. Sin configuración usa los mocks locales; cuando configurás la API, muestra sus datos y también sus errores de conexión, sin ocultarlos.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. Iniciá Docker Desktop y dejalo en funcionamiento.
+2. En una segunda terminal de PowerShell, entrá a la copia local de la API de la cátedra y arrancala:
 
-## Join the community
+   ```powershell
+   Set-Location "C:\Users\guard\Downloads\API\api-proyectos-mobile\api-reservas-deportivas"
+   docker compose up
+   ```
 
-Join our community of developers creating universal apps.
+3. En una terminal nueva, corré `ipconfig` y buscá la dirección IPv4 de la computadora. Con el teléfono y la computadora en la misma Wi-Fi, verificá desde el navegador del teléfono que `http://TU_IP:3000/salud` responde.
+4. En la raíz de esta app, copiá `.env.example` como `.env.local` y reemplazá `TU_IP` por esa dirección IPv4:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+   ```powershell
+   Copy-Item .env.example .env.local
+   ```
+
+5. Si Expo ya estaba abierto, detenelo con `Ctrl+C` y volvé a ejecutar `pnpm start`.
+
+No uses `localhost` en `.env.local`: desde el teléfono, `localhost` apunta al propio teléfono, no a la computadora. Si la app no conecta, revisá el Wi-Fi y permití el puerto 3000 en el firewall de Windows.
+
+## Lo que ya está implementado
+
+- Catálogo de espacios con fotos de muestra, deporte, precio y ficha de características.
+- Filtros por deporte y por complejo.
+- Lectura de `/espacios` y `/deportes` de la API, con uso de los mocks mientras no se configure una dirección.
+- Reintento visible si la API devuelve un error o no está disponible.
+
+El resto del PRD —turnos, reservas, QR, notificaciones y administración— todavía necesita implementarse. La configuración de Expo y los assets de esta versión permiten abrir la app y seguir trabajando en esas tareas.
